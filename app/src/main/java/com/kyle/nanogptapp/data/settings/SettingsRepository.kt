@@ -12,7 +12,10 @@ import kotlinx.coroutines.flow.asStateFlow
 class SettingsRepository(context: Context) {
     private val appContext = context.applicationContext
 
-    private val prefs: SharedPreferences = appContext.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+    private val prefs: SharedPreferences = appContext.getSharedPreferences(
+        PREFS_NAME,
+        Context.MODE_PRIVATE,
+    )
 
     private val securePrefs: SharedPreferences = EncryptedSharedPreferences.create(
         appContext,
@@ -21,7 +24,7 @@ class SettingsRepository(context: Context) {
             .setKeyScheme(MasterKey.KeyScheme.AES256_GCM)
             .build(),
         EncryptedSharedPreferences.PrefKeyEncryptionScheme.AES256_SIV,
-        EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM
+        EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM,
     )
 
     private val _settings = MutableStateFlow(readSettings())
@@ -76,7 +79,7 @@ class SettingsRepository(context: Context) {
             reasoningEnabled = prefs.getBoolean(KEY_REASONING_ENABLED, false),
             searchEnabled = prefs.getBoolean(KEY_SEARCH_ENABLED, false),
             memoryEnabled = prefs.getBoolean(KEY_MEMORY_ENABLED, false),
-            mediaEnabled = prefs.getBoolean(KEY_MEDIA_ENABLED, false)
+            mediaEnabled = prefs.getBoolean(KEY_MEDIA_ENABLED, false),
         )
     }
 

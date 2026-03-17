@@ -12,19 +12,19 @@ data class SettingsUiState(
     val settings: AppSettings = AppSettings(),
     val apiKeyInput: String = "",
     val isApiKeyVisible: Boolean = false,
-    val saveMessage: String? = null
+    val saveMessage: String? = null,
 )
 
 class SettingsViewModel(
-    private val repository: SettingsRepository
+    private val repository: SettingsRepository,
 ) : ViewModel() {
     val settings = repository.settings
 
     private val _uiState = MutableStateFlow(
         SettingsUiState(
             settings = repository.settings.value,
-            apiKeyInput = repository.getApiKey()
-        )
+            apiKeyInput = repository.getApiKey(),
+        ),
     )
     val uiState: StateFlow<SettingsUiState> = _uiState.asStateFlow()
 
@@ -49,7 +49,7 @@ class SettingsViewModel(
                     "API key saved securely on device"
                 } else {
                     "API key cleared"
-                }
+                },
             )
         }
     }
@@ -60,7 +60,7 @@ class SettingsViewModel(
             it.copy(
                 settings = repository.settings.value,
                 apiKeyInput = "",
-                saveMessage = "API key removed from secure storage"
+                saveMessage = "API key removed from secure storage",
             )
         }
     }

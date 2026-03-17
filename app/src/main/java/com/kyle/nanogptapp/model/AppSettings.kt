@@ -12,5 +12,5 @@ data class AppSettings(
     val reasoningEnabled: Boolean = false,
     val searchEnabled: Boolean = false,
     val memoryEnabled: Boolean = false,
-    val mediaEnabled: Boolean = false
+    val mediaEnabled: Boolean = false,
 )
