@@ -6,9 +6,50 @@ updates:
       interval: "weekly"
     open-pull-requests-limit: 8
     groups:
-      gradle-dependencies:
+      android-toolchain:
         patterns:
-          - "*"
+          - "com.android.application"
+          - "org.jetbrains.kotlin.android"
+          - "org.jetbrains.kotlin.plugin.serialization"
+      quality-tools:
+        patterns:
+          - "org.jlleitschuh.gradle.ktlint"
+          - "io.gitlab.arturbosch.detekt"
+          - "io.gitlab.arturbosch.detekt:*"
+      androidx-runtime:
+        patterns:
+          - "androidx.compose:*"
+          - "androidx.core:*"
+          - "androidx.lifecycle:*"
+          - "androidx.activity:*"
+          - "androidx.security:*"
+      networking-and-serialization:
+        patterns:
+          - "org.jetbrains.kotlinx:*"
+          - "com.squareup.okhttp3:*"
+      android-tests:
+        patterns:
+          - "androidx.test:*"
+          - "junit:*"
+    ignore:
+      - dependency-name: "com.android.application"
+        update-types:
+          - "version-update:semver-major"
+      - dependency-name: "org.jetbrains.kotlin.android"
+        update-types:
+          - "version-update:semver-major"
+      - dependency-name: "org.jetbrains.kotlin.plugin.serialization"
+        update-types:
+          - "version-update:semver-major"
+      - dependency-name: "org.jlleitschuh.gradle.ktlint"
+        update-types:
+          - "version-update:semver-major"
+      - dependency-name: "com.squareup.okhttp3:okhttp"
+        update-types:
+          - "version-update:semver-major"
+      - dependency-name: "com.squareup.okhttp3:logging-interceptor"
+        update-types:
+          - "version-update:semver-major"
 
   - package-ecosystem: "github-actions"
     directory: "/"
