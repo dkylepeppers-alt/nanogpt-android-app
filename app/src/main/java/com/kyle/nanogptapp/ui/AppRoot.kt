@@ -10,11 +10,14 @@ import androidx.compose.material3.TabRow
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
+import com.kyle.nanogptapp.data.settings.SettingsGraph
 import com.kyle.nanogptapp.ui.chat.ChatScreen
 import com.kyle.nanogptapp.ui.settings.SettingsScreen
 
@@ -23,6 +26,9 @@ import com.kyle.nanogptapp.ui.settings.SettingsScreen
 fun AppRoot() {
     var selectedTab by remember { mutableIntStateOf(0) }
     val tabs = listOf("Chat", "Settings")
+    val context = LocalContext.current
+    val settingsRepository = remember(context) { SettingsGraph.repository(context) }
+    val settings by settingsRepository.settings.collectAsState()
 
     Scaffold(
         topBar = {
@@ -45,7 +51,7 @@ fun AppRoot() {
             }
 
             when (selectedTab) {
-                0 -> ChatScreen()
+                0 -> ChatScreen(hasApiKey = settings.hasApiKey)
                 1 -> SettingsScreen()
             }
         }

@@ -19,7 +19,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 
 @Composable
-fun ChatScreen() {
+fun ChatScreen(hasApiKey: Boolean) {
     var input by remember { mutableStateOf("") }
 
     Column(
@@ -33,6 +33,9 @@ fun ChatScreen() {
                 Text("Chat milestone")
                 Text("This screen is the first target: text chat, model selection, then streaming.")
                 Text("The architecture is being kept open for future image and video generation flows.")
+                if (!hasApiKey) {
+                    Text("No API key configured yet. Use Settings to save one before enabling live requests.")
+                }
             }
         }
 
@@ -40,11 +43,12 @@ fun ChatScreen() {
             value = input,
             onValueChange = { input = it },
             modifier = Modifier.fillMaxWidth(),
-            label = { Text("Message") }
+            label = { Text("Message") },
+            enabled = hasApiKey
         )
 
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            Button(onClick = { }) {
+            Button(onClick = { }, enabled = hasApiKey) {
                 Text("Send")
             }
             Button(onClick = { input = "" }) {

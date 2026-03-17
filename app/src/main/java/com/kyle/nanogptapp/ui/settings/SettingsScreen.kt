@@ -2,52 +2,153 @@ package com.kyle.nanogptapp.ui.settings
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.Button
 import androidx.compose.material3.Card
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.input.KeyboardCapitalization
+import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.kyle.nanogptapp.data.settings.SettingsGraph
 
 @Composable
 fun SettingsScreen() {
-    var apiKey by remember { mutableStateOf("") }
-    var reasoningEnabled by remember { mutableStateOf(false) }
-    var searchEnabled by remember { mutableStateOf(false) }
-    var memoryEnabled by remember { mutableStateOf(false) }
-    var mediaEnabled by remember { mutableStateOf(false) }
+    val context = LocalContext.current.applicationContext
+    val factory = remember(context) {
+        object : ViewModelProvider.Factory {
+            @Suppress("UNCHECKED_CAST")
+            override fun <T : ViewModel> create(modelClass: Class<T>): T {
+                return SettingsViewModel(SettingsGraph.repository(context)) as T
+            }
+        }
+    }
+    val viewModel: SettingsViewModel = viewModel(factory = factory)
+    val uiState by viewModel.uiState.collectAsState()
 
+    SettingsScreen(
+        uiState = uiState,
+        onApiKeyInputChanged = viewModel::onApiKeyInputChanged,
+        onApiKeyVisibilityChanged = viewModel::onApiKeyVisibilityChanged,
+        onSaveApiKey = viewModel::saveApiKey,
+        onClearApiKey = viewModel::clearApiKey,
+        onReasoningChanged = viewModel::updateReasoningEnabled,
+        onSearchChanged = viewModel::updateSearchEnabled,
+        onMemoryChanged = viewModel::updateMemoryEnabled,
+        onMediaChanged = viewModel::updateMediaEnabled
+    )
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun SettingsScreen(
+    uiState: SettingsUiState,
+    onApiKeyInputChanged: (String) -> Unit,
+    onApiKeyVisibilityChanged: (Boolean) -> Unit,
+    onSaveApiKey: () -> Unit,
+    onClearApiKey: () -> Unit,
+    onReasoningChanged: (Boolean) -> Unit,
+    onSearchChanged: (Boolean) -> Unit,
+    onMemoryChanged: (Boolean) -> Unit,
+    onMediaChanged: (Boolean) -> Unit
+) {
     Column(
         modifier = Modifier
             .fillMaxSize()
+            .verticalScroll(rememberScrollState())
             .padding(16.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
-        OutlinedTextField(
-            value = apiKey,
-            onValueChange = { apiKey = it },
-            modifier = Modifier.fillMaxWidth(),
-            label = { Text("NanoGPT API key") }
-        )
+        Card(modifier = Modifier.fillMaxWidth()) {
+            Column(
+                modifier = Modifier.padding(16.dp),
+                verticalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                Text("Secure credentials")
+                Text(
+                    if (uiState.settings.hasApiKey) {
+                        "A NanoGPT API key is stored in encrypted on-device preferences."
+                    } else {
+                        "No API key saved yet. Add one before wiring up live API calls."
+                    }
+                )
 
-        SettingToggle("Reasoning", reasoningEnabled) { reasoningEnabled = it }
-        SettingToggle("Web search (:online)", searchEnabled) { searchEnabled = it }
-        SettingToggle("Memory (:memory)", memoryEnabled) { memoryEnabled = it }
-        SettingToggle("Future media generation path", mediaEnabled) { mediaEnabled = it }
+                OutlinedTextField(
+                    value = uiState.apiKeyInput,
+                    onValueChange = onApiKeyInputChanged,
+                    modifier = Modifier.fillMaxWidth(),
+                    label = { Text("NanoGPT API key") },
+                    singleLine = true,
+                    visualTransformation = if (uiState.isApiKeyVisible) {
+                        VisualTransformation.None
+                    } else {
+                        PasswordVisualTransformation()
+                    },
+                    keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.None),
+                    supportingText = {
+                        Text("Stored locally only. Future network clients can read it through the settings repository.")
+                    }
+                )
+
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    OutlinedButton(onClick = { onApiKeyVisibilityChanged(!uiState.isApiKeyVisible) }) {
+                        Text(if (uiState.isApiKeyVisible) "Hide" else "Show")
+                    }
+                    Button(onClick = onSaveApiKey) {
+                        Text("Save key")
+                    }
+                    OutlinedButton(onClick = onClearApiKey) {
+                        Text("Clear")
+                    }
+                }
+
+                uiState.saveMessage?.let { Text(it) }
+            }
+        }
 
         Card(modifier = Modifier.fillMaxWidth()) {
-            Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                Text("Media roadmap")
-                Text("The app is being structured so image and video generation can later be added as separate features, not hacks bolted onto chat.")
-                Text("Planned future areas: generation jobs, gallery/history, prompt presets, upload/reference inputs, and render status tracking.")
+            Column(
+                modifier = Modifier.padding(16.dp),
+                verticalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                Text("Feature toggles")
+                SettingToggle("Reasoning", uiState.settings.reasoningEnabled, onReasoningChanged)
+                SettingToggle("Web search (:online)", uiState.settings.searchEnabled, onSearchChanged)
+                SettingToggle("Memory (:memory)", uiState.settings.memoryEnabled, onMemoryChanged)
+                SettingToggle("Future media generation path", uiState.settings.mediaEnabled, onMediaChanged)
+            }
+        }
+
+        Card(modifier = Modifier.fillMaxWidth()) {
+            Column(
+                modifier = Modifier.padding(16.dp),
+                verticalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                Text("Settings architecture")
+                Text("This pass keeps secure credentials separate from general app preferences.")
+                Text("That leaves room for future model selection, image/video defaults, render settings, and account-level toggles without rewriting the storage layer.")
             }
         }
     }
@@ -55,7 +156,7 @@ fun SettingsScreen() {
 
 @Composable
 private fun SettingToggle(label: String, checked: Boolean, onCheckedChange: (Boolean) -> Unit) {
-    androidx.compose.foundation.layout.Row(
+    Row(
         modifier = Modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.SpaceBetween
     ) {
