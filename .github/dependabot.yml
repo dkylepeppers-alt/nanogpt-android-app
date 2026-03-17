@@ -18,7 +18,7 @@ updates:
           - "io.gitlab.arturbosch.detekt:*"
       androidx-runtime:
         patterns:
-          - "androidx.compose:*"
+          - "androidx.compose*:*"
           - "androidx.core:*"
           - "androidx.lifecycle:*"
           - "androidx.activity:*"
@@ -29,7 +29,7 @@ updates:
           - "com.squareup.okhttp3:*"
       android-tests:
         patterns:
-          - "androidx.test:*"
+          - "androidx.test*:*"
           - "junit:*"
     ignore:
       - dependency-name: "com.android.application"
