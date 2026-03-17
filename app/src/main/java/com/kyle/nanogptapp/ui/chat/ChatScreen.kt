@@ -26,10 +26,13 @@ fun ChatScreen(hasApiKey: Boolean) {
         modifier = Modifier
             .fillMaxSize()
             .padding(16.dp),
-        verticalArrangement = Arrangement.spacedBy(12.dp)
+        verticalArrangement = Arrangement.spacedBy(12.dp),
     ) {
         Card(modifier = Modifier.fillMaxWidth()) {
-            Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            Column(
+                modifier = Modifier.padding(16.dp),
+                verticalArrangement = Arrangement.spacedBy(8.dp),
+            ) {
                 Text("Chat milestone")
                 Text("This screen is the first target: text chat, model selection, then streaming.")
                 Text("The architecture is being kept open for future image and video generation flows.")
@@ -44,7 +47,7 @@ fun ChatScreen(hasApiKey: Boolean) {
             onValueChange = { input = it },
             modifier = Modifier.fillMaxWidth(),
             label = { Text("Message") },
-            enabled = hasApiKey
+            enabled = hasApiKey,
         )
 
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {

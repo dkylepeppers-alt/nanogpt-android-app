@@ -27,25 +27,27 @@ fun AppRoot() {
     var selectedTab by remember { mutableIntStateOf(0) }
     val tabs = listOf("Chat", "Settings")
     val context = LocalContext.current
-    val settingsRepository = remember(context) { SettingsGraph.repository(context) }
+    val settingsRepository = remember(context) {
+        SettingsGraph.repository(context)
+    }
     val settings by settingsRepository.settings.collectAsState()
 
     Scaffold(
         topBar = {
             TopAppBar(title = { Text("NanoGPT") })
-        }
+        },
     ) { innerPadding ->
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(innerPadding)
+                .padding(innerPadding),
         ) {
             TabRow(selectedTabIndex = selectedTab) {
                 tabs.forEachIndexed { index, title ->
                     Tab(
                         selected = selectedTab == index,
                         onClick = { selectedTab = index },
-                        text = { Text(title) }
+                        text = { Text(title) },
                     )
                 }
             }

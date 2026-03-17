@@ -7,7 +7,7 @@ package com.kyle.nanogptapp.model
  */
 data class ChatMessage(
     val role: String,
-    val content: String
+    val content: String,
 )
 
 data class ChatRequest(
@@ -15,12 +15,12 @@ data class ChatRequest(
     val messages: List<ChatMessage>,
     val reasoningEnabled: Boolean = false,
     val reasoningEffort: String = "low",
-    val stream: Boolean = false
+    val stream: Boolean = false,
 )
 
 data class ModelSummary(
     val id: String,
     val displayName: String = id,
     val supportsVision: Boolean = false,
-    val supportsReasoning: Boolean = false
+    val supportsReasoning: Boolean = false,
 )

@@ -11,7 +11,6 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Switch
@@ -45,7 +44,7 @@ fun SettingsScreen() {
     val viewModel: SettingsViewModel = viewModel(factory = factory)
     val uiState by viewModel.uiState.collectAsState()
 
-    SettingsScreen(
+    SettingsContent(
         uiState = uiState,
         onApiKeyInputChanged = viewModel::onApiKeyInputChanged,
         onApiKeyVisibilityChanged = viewModel::onApiKeyVisibilityChanged,
@@ -54,13 +53,12 @@ fun SettingsScreen() {
         onReasoningChanged = viewModel::updateReasoningEnabled,
         onSearchChanged = viewModel::updateSearchEnabled,
         onMemoryChanged = viewModel::updateMemoryEnabled,
-        onMediaChanged = viewModel::updateMediaEnabled
+        onMediaChanged = viewModel::updateMediaEnabled,
     )
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun SettingsScreen(
+private fun SettingsContent(
     uiState: SettingsUiState,
     onApiKeyInputChanged: (String) -> Unit,
     onApiKeyVisibilityChanged: (Boolean) -> Unit,
@@ -69,19 +67,19 @@ private fun SettingsScreen(
     onReasoningChanged: (Boolean) -> Unit,
     onSearchChanged: (Boolean) -> Unit,
     onMemoryChanged: (Boolean) -> Unit,
-    onMediaChanged: (Boolean) -> Unit
+    onMediaChanged: (Boolean) -> Unit,
 ) {
     Column(
         modifier = Modifier
             .fillMaxSize()
             .verticalScroll(rememberScrollState())
             .padding(16.dp),
-        verticalArrangement = Arrangement.spacedBy(12.dp)
+        verticalArrangement = Arrangement.spacedBy(12.dp),
     ) {
         Card(modifier = Modifier.fillMaxWidth()) {
             Column(
                 modifier = Modifier.padding(16.dp),
-                verticalArrangement = Arrangement.spacedBy(8.dp)
+                verticalArrangement = Arrangement.spacedBy(8.dp),
             ) {
                 Text("Secure credentials")
                 Text(
@@ -89,7 +87,7 @@ private fun SettingsScreen(
                         "A NanoGPT API key is stored in encrypted on-device preferences."
                     } else {
                         "No API key saved yet. Add one before wiring up live API calls."
-                    }
+                    },
                 )
 
                 OutlinedTextField(
@@ -103,15 +101,19 @@ private fun SettingsScreen(
                     } else {
                         PasswordVisualTransformation()
                     },
-                    keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.None),
+                    keyboardOptions = KeyboardOptions(
+                        capitalization = KeyboardCapitalization.None,
+                    ),
                     supportingText = {
-                        Text("Stored locally only. Future network clients can read it through the settings repository.")
-                    }
+                        Text(
+                            "Stored locally only. Future network clients can read it through the settings repository.",
+                        )
+                    },
                 )
 
                 Row(
                     modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
                 ) {
                     OutlinedButton(onClick = { onApiKeyVisibilityChanged(!uiState.isApiKeyVisible) }) {
                         Text(if (uiState.isApiKeyVisible) "Hide" else "Show")
@@ -131,34 +133,56 @@ private fun SettingsScreen(
         Card(modifier = Modifier.fillMaxWidth()) {
             Column(
                 modifier = Modifier.padding(16.dp),
-                verticalArrangement = Arrangement.spacedBy(8.dp)
+                verticalArrangement = Arrangement.spacedBy(8.dp),
             ) {
                 Text("Feature toggles")
-                SettingToggle("Reasoning", uiState.settings.reasoningEnabled, onReasoningChanged)
-                SettingToggle("Web search (:online)", uiState.settings.searchEnabled, onSearchChanged)
-                SettingToggle("Memory (:memory)", uiState.settings.memoryEnabled, onMemoryChanged)
-                SettingToggle("Future media generation path", uiState.settings.mediaEnabled, onMediaChanged)
+                SettingsToggle(
+                    label = "Reasoning",
+                    checked = uiState.settings.reasoningEnabled,
+                    onCheckedChange = onReasoningChanged,
+                )
+                SettingsToggle(
+                    label = "Web search (:online)",
+                    checked = uiState.settings.searchEnabled,
+                    onCheckedChange = onSearchChanged,
+                )
+                SettingsToggle(
+                    label = "Memory (:memory)",
+                    checked = uiState.settings.memoryEnabled,
+                    onCheckedChange = onMemoryChanged,
+                )
+                SettingsToggle(
+                    label = "Future media generation path",
+                    checked = uiState.settings.mediaEnabled,
+                    onCheckedChange = onMediaChanged,
+                )
             }
         }
 
         Card(modifier = Modifier.fillMaxWidth()) {
             Column(
                 modifier = Modifier.padding(16.dp),
-                verticalArrangement = Arrangement.spacedBy(8.dp)
+                verticalArrangement = Arrangement.spacedBy(8.dp),
             ) {
                 Text("Settings architecture")
                 Text("This pass keeps secure credentials separate from general app preferences.")
-                Text("That leaves room for future model selection, image/video defaults, render settings, and account-level toggles without rewriting the storage layer.")
+                Text(
+                    "That leaves room for future model selection, image/video defaults, render settings, and account-level toggles without rewriting the storage layer.",
+                )
             }
         }
     }
 }
 
 @Composable
-private fun SettingToggle(label: String, checked: Boolean, onCheckedChange: (Boolean) -> Unit) {
+private fun SettingsToggle(
+    label: String,
+    checked: Boolean,
+    onCheckedChange: (Boolean) -> Unit,
+) {
     Row(
         modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.SpaceBetween
+        horizontalArrangement = Arrangement.SpaceBetween,
     ) {
         Text(label)
         Switch(checked = checked, onCheckedChange = onCheckedChange)
