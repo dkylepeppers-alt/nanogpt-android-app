@@ -52,7 +52,7 @@ Practical implication:
 **Risk:** medium
 
 `assembleDebug` needs Android tooling/platform packages compatible with:
-- compileSdk 34
+- compileSdk 36
 - AGP 8.13.2
 - Java 17
 

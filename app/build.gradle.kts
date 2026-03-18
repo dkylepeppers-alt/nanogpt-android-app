@@ -8,7 +8,7 @@ plugins {
 
 android {
     namespace = "com.kyle.nanogptapp"
-    compileSdk = 34
+    compileSdk = 36
 
     defaultConfig {
         applicationId = "com.kyle.nanogptapp"

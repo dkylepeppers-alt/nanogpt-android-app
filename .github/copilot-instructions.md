@@ -69,7 +69,7 @@ Native Android client for [NanoGPT](https://nano-gpt.com/api) built with **Kotli
 ### Prerequisites
 
 - JDK 17 (Temurin recommended)
-- Android SDK with platform 34 installed
+- Android SDK with platform 36 installed
 - Use the committed Gradle wrapper (`./gradlew`)
 
 ### Gradle Wrapper Policy
