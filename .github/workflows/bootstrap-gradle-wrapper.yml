@@ -6,7 +6,7 @@ on:
       gradle-version:
         description: "Gradle version to write into the wrapper"
         required: false
-        default: "8.7"
+        default: "8.13"
 
 permissions:
   contents: write
@@ -41,5 +41,5 @@ jobs:
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add gradlew gradlew.bat gradle/wrapper/gradle-wrapper.jar gradle/wrapper/gradle-wrapper.properties
           git diff --cached --quiet && echo "No wrapper changes to commit" && exit 0
-          git commit -m "chore: add Gradle wrapper"
+          git commit -m "chore: update Gradle wrapper"
           git push

@@ -2,13 +2,13 @@
 
 ## Bottom line
 
-The repo is close to having useful CI, but the cleanest path for an Android-only user to get builds working soon is:
+The repo now has the core CI/build baseline it needed:
 
-1. **Generate and commit the Gradle wrapper from Android Studio** (`gradlew`, `gradlew.bat`, `gradle/wrapper/*`)
-2. **Make GitHub Actions use the wrapper only**
-3. **Keep CI narrow at first**: `ktlintCheck`, `detekt`, `assembleDebug`
+1. **A committed Gradle wrapper targeting Gradle 8.13**
+2. **A wrapper-only GitHub Actions workflow**
+3. **A narrow, sensible CI lane**: `ktlintCheck`, `detekt`, `assembleDebug`
 
-That is the shortest route to a repeatable Android build without depending on whatever `gradle` binary happens to exist on a runner.
+That is the cleanest path to repeatable Android builds without depending on whatever `gradle` binary happens to exist on a runner.
 
 ## Current repo state
 
@@ -21,97 +21,89 @@ That is the shortest route to a repeatable Android build without depending on wh
   - Kotlin serialization
   - ktlint plugin
   - detekt plugin
-- CI workflow already exists.
+- CI workflow exists and is now wrapper-only.
 - Dependabot is set up for Gradle and GitHub Actions.
 - Detekt config exists and is intentionally strict (`maxIssues: 0`).
+- The repo now includes:
+  - `gradlew`
+  - `gradlew.bat`
+  - `gradle/wrapper/gradle-wrapper.jar`
+  - `gradle/wrapper/gradle-wrapper.properties`
 
-### Main blocker
-- **No Gradle wrapper is committed.**
+### Main blocker addressed
+- **The missing Gradle wrapper issue is resolved in-repo.**
 
-For an Android project, that is the biggest practical problem. It hurts both:
-- **local onboarding** for a typical Android Studio user
+That improves both:
+- **local onboarding** for a typical Android user
 - **CI reproducibility** on GitHub Actions
 
-The current workflow tries to fall back to a system Gradle install (`gradle ...`) if `./gradlew` is missing. That can work sometimes, but it is not the clean Android path.
+## Remaining risks / likely failure points
 
-## Risks / likely failure points
-
-### 1) Missing wrapper
-**Risk:** highest
-
-Why it matters:
-- Android Studio and GitHub Actions both work best when the wrapper defines the exact Gradle version.
-- Without it, builds depend on CI setup details instead of repo state.
-- It makes future Android Gradle Plugin updates harder to reason about.
-
-### 2) CI currently supports two execution modes
-The workflow does this pattern:
-- use `./gradlew` if present
-- else use `gradle`
-
+### 1) CI has not been executed from this Termux session
 **Risk:** medium
 
-That adds ambiguity instead of reducing it. For Android repos, wrapper-only is cleaner and easier to debug.
+This environment does not currently have a local JDK or Gradle installed, so the wrapper-based Android tasks were not run locally here.
 
-### 3) Android SDK assumptions on runner
+Practical implication:
+- the repo is prepared correctly for wrapper-based builds
+- actual task validation still needs a GitHub Actions run, or a local machine with JDK 17 + Android SDK
+
+### 2) Android SDK assumptions on runner
 **Risk:** medium
 
 `assembleDebug` needs Android tooling/platform packages compatible with:
 - compileSdk 34
-- AGP 8.5.2
+- AGP 8.13.2
 - Java 17
 
-GitHub-hosted runners often have enough preinstalled for this to work, but relying on ambient setup is still less explicit than ideal.
+GitHub-hosted runners often have enough preinstalled for this to work, but if the job fails, the next fix would likely be making Android SDK setup more explicit.
 
-### 4) Static analysis may fail before build succeeds
+### 3) Static analysis may fail before build succeeds
 **Risk:** low to medium
 
-`detekt` is strict (`maxIssues: 0`). That is fine long-term, but on a new scaffold it can make CI red immediately if style/debt slips in. Same story for ktlint. Not a bad choice — just worth expecting.
+`detekt` is strict (`maxIssues: 0`). That is fine long-term, but it can make CI red quickly if style/debt slips in. Same story for ktlint. Not a bad choice — just worth expecting.
 
 ## Dependabot review
-Dependabot config is fine and reasonable:
+
+Dependabot config is still fine and reasonable:
 - weekly Gradle updates
 - weekly GitHub Actions updates
 - grouped PRs
 
-No urgent issue there. I would keep it.
+No urgent issue there.
 
 ## GitHub Actions review
-Current workflow intent is good:
+
+Current workflow shape is good:
 - checkout
 - JDK 17
-- Gradle setup
-- ktlint
-- detekt
-- debug build
-- upload APK
+- Gradle cache setup
+- `chmod +x gradlew`
+- `./gradlew ktlintCheck`
+- `./gradlew detekt`
+- `./gradlew assembleDebug`
+- upload APK artifact
 
-What I would change:
-- **Require wrapper usage once wrapper is committed**
-- Stop branching between `./gradlew` and `gradle`
-- Optionally add an Android SDK setup step only if the runner proves flaky
+What changed versus the earlier draft:
+- removed system-Gradle fallback logic
+- removed the pinned runner Gradle version from the main Android CI workflow
+- made the wrapper the only execution path
 
 ## Cleanest path for an Android-only user
 
-If the goal is **"get CI building soon with minimal churn"**, I would do exactly this:
+If the goal is **"get CI building soon with minimal churn"**, the repo is now set up the right way:
 
 ### Minimal next actions
-1. Open the project in **Android Studio**.
-2. Let Android Studio generate/update the **Gradle wrapper** for the project.
-3. Commit these files:
-   - `gradlew`
-   - `gradlew.bat`
-   - `gradle/wrapper/gradle-wrapper.jar`
-   - `gradle/wrapper/gradle-wrapper.properties`
-4. Update CI to run only:
-   - `./gradlew ktlintCheck detekt assembleDebug`
-5. Push and see what fails first.
-   - If lint/detekt fail, fix code/config.
-   - If Android SDK is missing on runner, then add explicit Android SDK setup.
+1. Push the current branch.
+2. Let GitHub Actions run `Android CI`.
+3. If CI fails, inspect the first failure:
+   - if `ktlint` or `detekt` fail, fix source/config issues
+   - if Android SDK packages are missing, add explicit SDK setup to the workflow
+   - if wrapper permissions fail, confirm `gradlew` remains executable in git
 
-## Recommended CI shape after wrapper is added
+## Recommended CI shape after wrapper commit
 
-Conceptually, the workflow should be:
+Conceptually, the workflow should remain:
 - checkout
 - setup Java 17
 - setup Gradle cache
@@ -123,17 +115,16 @@ That is enough for a solid first Android CI lane.
 
 ## Opinionated call
 
-If I had to pick one move only, it would be:
+If I had to pick one build-infra move that mattered most, it was:
 
 **Commit the Gradle wrapper first.**
 
-Not detekt tweaks, not extra workflow polish, not more tooling.
-The wrapper is the thing that turns this from “maybe builds on this runner” into “this repo defines how it builds.”
+That is the change that turns this from “maybe builds on this runner” into “this repo defines how it builds.”
 
 ## Short summary
 
-- **Biggest blocker:** missing Gradle wrapper
-- **Current workflow:** close, but too tolerant of non-wrapper builds
+- **Biggest prior blocker:** missing Gradle wrapper
+- **Current workflow:** simplified to wrapper-only
 - **Dependabot:** good as-is
-- **ktlint/detekt:** fine to keep in CI from day one
-- **Minimal path to green CI:** commit wrapper, then run `./gradlew ktlintCheck detekt assembleDebug`
+- **ktlint/detekt:** still appropriate in CI from day one
+- **Next validation step:** run GitHub Actions on the current branch
