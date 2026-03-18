@@ -20,12 +20,13 @@ class SettingsViewModel(
 ) : ViewModel() {
     val settings = repository.settings
 
-    private val _uiState = MutableStateFlow(
-        SettingsUiState(
-            settings = repository.settings.value,
-            apiKeyInput = repository.getApiKey(),
-        ),
-    )
+    private val _uiState =
+        MutableStateFlow(
+            SettingsUiState(
+                settings = repository.settings.value,
+                apiKeyInput = repository.getApiKey(),
+            ),
+        )
     val uiState: StateFlow<SettingsUiState> = _uiState.asStateFlow()
 
     init {
@@ -45,11 +46,12 @@ class SettingsViewModel(
         _uiState.update {
             it.copy(
                 settings = repository.settings.value,
-                saveMessage = if (repository.settings.value.hasApiKey) {
-                    "API key saved securely on device"
-                } else {
-                    "API key cleared"
-                },
+                saveMessage =
+                    if (repository.settings.value.hasApiKey) {
+                        "API key saved securely on device"
+                    } else {
+                        "API key cleared"
+                    },
             )
         }
     }

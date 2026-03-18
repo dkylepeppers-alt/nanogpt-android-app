@@ -39,15 +39,17 @@ fun ChatScreen(hasApiKey: Boolean) {
     var input by remember { mutableStateOf("") }
 
     Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(16.dp),
+        modifier =
+            Modifier
+                .fillMaxSize()
+                .padding(16.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp),
     ) {
         Card(
-            modifier = Modifier
-                .fillMaxWidth()
-                .testTag(ChatScreenTags.STATUS_CARD),
+            modifier =
+                Modifier
+                    .fillMaxWidth()
+                    .testTag(ChatScreenTags.STATUS_CARD),
         ) {
             Column(
                 modifier = Modifier.padding(16.dp),
@@ -63,9 +65,10 @@ fun ChatScreen(hasApiKey: Boolean) {
         OutlinedTextField(
             value = input,
             onValueChange = { input = it },
-            modifier = Modifier
-                .fillMaxWidth()
-                .testTag(ChatScreenTags.MESSAGE_INPUT),
+            modifier =
+                Modifier
+                    .fillMaxWidth()
+                    .testTag(ChatScreenTags.MESSAGE_INPUT),
             label = { Text("Message") },
             enabled = hasApiKey,
         )

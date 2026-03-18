@@ -32,22 +32,24 @@ interface SettingsRepository {
 class AndroidSettingsRepository(context: Context) : SettingsRepository {
     private val appContext = context.applicationContext
 
-    private val prefs: SharedPreferences = appContext.getSharedPreferences(
-        PREFS_NAME,
-        Context.MODE_PRIVATE,
-    )
+    private val prefs: SharedPreferences =
+        appContext.getSharedPreferences(
+            PREFS_NAME,
+            Context.MODE_PRIVATE,
+        )
 
     // Excluded from Android backup/device transfer so encrypted API-key data is not
     // restored onto a different keystore context where it cannot be safely decrypted.
-    private val securePrefs: SharedPreferences = EncryptedSharedPreferences.create(
-        appContext,
-        SECURE_PREFS_NAME,
-        MasterKey.Builder(appContext)
-            .setKeyScheme(MasterKey.KeyScheme.AES256_GCM)
-            .build(),
-        EncryptedSharedPreferences.PrefKeyEncryptionScheme.AES256_SIV,
-        EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM,
-    )
+    private val securePrefs: SharedPreferences =
+        EncryptedSharedPreferences.create(
+            appContext,
+            SECURE_PREFS_NAME,
+            MasterKey.Builder(appContext)
+                .setKeyScheme(MasterKey.KeyScheme.AES256_GCM)
+                .build(),
+            EncryptedSharedPreferences.PrefKeyEncryptionScheme.AES256_SIV,
+            EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM,
+        )
 
     private val _settings = MutableStateFlow(readSettings())
     override val settings: StateFlow<AppSettings> = _settings.asStateFlow()

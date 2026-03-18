@@ -27,9 +27,10 @@ fun AppRoot() {
     var selectedTab by remember { mutableIntStateOf(0) }
     val tabs = listOf("Chat", "Settings")
     val context = LocalContext.current
-    val settingsRepository = remember(context) {
-        SettingsGraph.repository(context)
-    }
+    val settingsRepository =
+        remember(context) {
+            SettingsGraph.repository(context)
+        }
     val settings by settingsRepository.settings.collectAsState()
 
     Scaffold(
@@ -38,9 +39,10 @@ fun AppRoot() {
         },
     ) { innerPadding ->
         Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(innerPadding),
+            modifier =
+                Modifier
+                    .fillMaxSize()
+                    .padding(innerPadding),
         ) {
             TabRow(selectedTabIndex = selectedTab) {
                 tabs.forEachIndexed { index, title ->

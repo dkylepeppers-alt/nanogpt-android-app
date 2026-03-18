@@ -31,17 +31,16 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.kyle.nanogptapp.data.settings.SettingsGraph
 
 @Composable
-fun SettingsRoute(
-    factory: ViewModelProvider.Factory? = null,
-) {
+fun SettingsRoute(factory: ViewModelProvider.Factory? = null) {
     val context = LocalContext.current
-    val resolvedFactory = factory ?: remember(context) {
-        object : ViewModelProvider.Factory {
-            @Suppress("UNCHECKED_CAST")
-            override fun <T : ViewModel> create(modelClass: Class<T>): T =
-                SettingsViewModel(SettingsGraph.repository(context.applicationContext)) as T
+    val resolvedFactory =
+        factory ?: remember(context) {
+            object : ViewModelProvider.Factory {
+                @Suppress("UNCHECKED_CAST")
+                override fun <T : ViewModel> create(modelClass: Class<T>): T =
+                    SettingsViewModel(SettingsGraph.repository(context.applicationContext)) as T
+            }
         }
-    }
     val viewModel: SettingsViewModel = viewModel(factory = resolvedFactory)
     val uiState by viewModel.uiState.collectAsState()
 
@@ -71,10 +70,11 @@ fun SettingsScreen(
     onMediaChanged: (Boolean) -> Unit,
 ) {
     Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .verticalScroll(rememberScrollState())
-            .padding(16.dp),
+        modifier =
+            Modifier
+                .fillMaxSize()
+                .verticalScroll(rememberScrollState())
+                .padding(16.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp),
     ) {
         Card(modifier = Modifier.fillMaxWidth()) {
@@ -97,14 +97,16 @@ fun SettingsScreen(
                     modifier = Modifier.fillMaxWidth(),
                     label = { Text("NanoGPT API key") },
                     singleLine = true,
-                    visualTransformation = if (uiState.isApiKeyVisible) {
-                        VisualTransformation.None
-                    } else {
-                        PasswordVisualTransformation()
-                    },
-                    keyboardOptions = KeyboardOptions(
-                        capitalization = KeyboardCapitalization.None,
-                    ),
+                    visualTransformation =
+                        if (uiState.isApiKeyVisible) {
+                            VisualTransformation.None
+                        } else {
+                            PasswordVisualTransformation()
+                        },
+                    keyboardOptions =
+                        KeyboardOptions(
+                            capitalization = KeyboardCapitalization.None,
+                        ),
                     supportingText = {
                         Text(
                             "Stored locally only. Future network clients can read it through the settings repository.",
@@ -168,7 +170,8 @@ fun SettingsScreen(
                 Text("Settings architecture")
                 Text("This pass keeps secure credentials separate from general app preferences.")
                 Text(
-                    "That leaves room for future model selection, image/video defaults, render settings, and account-level toggles without rewriting the storage layer.",
+                    "That leaves room for future model selection, image/video defaults, " +
+                        "render settings, and account-level toggles without rewriting the storage layer.",
                 )
             }
         }
