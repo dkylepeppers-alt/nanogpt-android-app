@@ -18,21 +18,31 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.kyle.nanogptapp.data.settings.SettingsGraph
 
 @Composable
 fun SettingsRoute(
-    factory: ViewModelProvider.Factory = SettingsGraph.viewModelFactory(LocalContext.current.applicationContext),
+    factory: ViewModelProvider.Factory? = null,
 ) {
-    val viewModel: SettingsViewModel = viewModel(factory = factory)
+    val context = LocalContext.current
+    val resolvedFactory = factory ?: remember(context) {
+        object : ViewModelProvider.Factory {
+            @Suppress("UNCHECKED_CAST")
+            override fun <T : ViewModel> create(modelClass: Class<T>): T =
+                SettingsViewModel(SettingsGraph.repository(context.applicationContext)) as T
+        }
+    }
+    val viewModel: SettingsViewModel = viewModel(factory = resolvedFactory)
     val uiState by viewModel.uiState.collectAsState()
 
     SettingsScreen(
