@@ -55,11 +55,12 @@ private class FakeSettingsRepository(
     initialApiKey: String = "",
 ) : SettingsRepository {
     private var apiKey: String = initialApiKey
-    private val state = MutableStateFlow(
-        AppSettings(
-            hasApiKey = initialApiKey.isNotBlank(),
-        ),
-    )
+    private val state =
+        MutableStateFlow(
+            AppSettings(
+                hasApiKey = initialApiKey.isNotBlank(),
+            ),
+        )
 
     override val settings: StateFlow<AppSettings> = state.asStateFlow()
 
