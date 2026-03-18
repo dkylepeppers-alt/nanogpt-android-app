@@ -31,20 +31,20 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.kyle.nanogptapp.data.settings.SettingsGraph
 
 @Composable
-fun SettingsScreen() {
-    val context = LocalContext.current.applicationContext
-    val factory = remember(context) {
-        object : ViewModelProvider.Factory {
-            @Suppress("UNCHECKED_CAST")
-            override fun <T : ViewModel> create(modelClass: Class<T>): T {
-                return SettingsViewModel(SettingsGraph.repository(context)) as T
+fun SettingsRoute(factory: ViewModelProvider.Factory? = null) {
+    val context = LocalContext.current
+    val resolvedFactory =
+        factory ?: remember(context) {
+            object : ViewModelProvider.Factory {
+                @Suppress("UNCHECKED_CAST")
+                override fun <T : ViewModel> create(modelClass: Class<T>): T =
+                    SettingsViewModel(SettingsGraph.repository(context.applicationContext)) as T
             }
         }
-    }
-    val viewModel: SettingsViewModel = viewModel(factory = factory)
+    val viewModel: SettingsViewModel = viewModel(factory = resolvedFactory)
     val uiState by viewModel.uiState.collectAsState()
 
-    SettingsContent(
+    SettingsScreen(
         uiState = uiState,
         onApiKeyInputChanged = viewModel::onApiKeyInputChanged,
         onApiKeyVisibilityChanged = viewModel::onApiKeyVisibilityChanged,
@@ -58,7 +58,7 @@ fun SettingsScreen() {
 }
 
 @Composable
-private fun SettingsContent(
+fun SettingsScreen(
     uiState: SettingsUiState,
     onApiKeyInputChanged: (String) -> Unit,
     onApiKeyVisibilityChanged: (Boolean) -> Unit,
@@ -70,10 +70,11 @@ private fun SettingsContent(
     onMediaChanged: (Boolean) -> Unit,
 ) {
     Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .verticalScroll(rememberScrollState())
-            .padding(16.dp),
+        modifier =
+            Modifier
+                .fillMaxSize()
+                .verticalScroll(rememberScrollState())
+                .padding(16.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp),
     ) {
         Card(modifier = Modifier.fillMaxWidth()) {
@@ -96,14 +97,16 @@ private fun SettingsContent(
                     modifier = Modifier.fillMaxWidth(),
                     label = { Text("NanoGPT API key") },
                     singleLine = true,
-                    visualTransformation = if (uiState.isApiKeyVisible) {
-                        VisualTransformation.None
-                    } else {
-                        PasswordVisualTransformation()
-                    },
-                    keyboardOptions = KeyboardOptions(
-                        capitalization = KeyboardCapitalization.None,
-                    ),
+                    visualTransformation =
+                        if (uiState.isApiKeyVisible) {
+                            VisualTransformation.None
+                        } else {
+                            PasswordVisualTransformation()
+                        },
+                    keyboardOptions =
+                        KeyboardOptions(
+                            capitalization = KeyboardCapitalization.None,
+                        ),
                     supportingText = {
                         Text(
                             "Stored locally only. Future network clients can read it through the settings repository.",
@@ -167,7 +170,8 @@ private fun SettingsContent(
                 Text("Settings architecture")
                 Text("This pass keeps secure credentials separate from general app preferences.")
                 Text(
-                    "That leaves room for future model selection, image/video defaults, render settings, and account-level toggles without rewriting the storage layer.",
+                    "That leaves room for future model selection, image/video defaults, " +
+                        "render settings, and account-level toggles without rewriting the storage layer.",
                 )
             }
         }

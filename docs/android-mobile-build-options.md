@@ -4,21 +4,21 @@
 
 For **this repo**, the most realistic path with **only an Android phone** is:
 
-1. **Make GitHub Actions the primary build machine**.
-2. **Commit a proper Gradle wrapper** (`gradlew`, `gradlew.bat`, `gradle/wrapper/*`) as the first build-infra fix.
+1. **Use the checked-in Gradle wrapper as the single build entrypoint**.
+2. **Make GitHub Actions the primary build machine**.
 3. Use the phone for **editing code, pushing commits, triggering workflows, downloading APK artifacts, and sideload testing**.
 4. Treat on-device Termux builds as a **fallback / experiment**, not the default workflow.
 
 That recommendation is based on the current repo state:
 
-- `app/build.gradle.kts` uses a modern Android stack: **AGP 8.5.2**, **Kotlin 1.9.24**, **Compose**, **Java 17**.
-- The repo currently has **no checked-in Gradle wrapper**.
-- There is already a GitHub Actions workflow at `.github/workflows/android.yml` that:
+- `app/build.gradle.kts` uses a modern Android stack: **AGP 8.13.2**, **Kotlin 1.9.25**, **Compose**, **Java 17**.
+- The repo now includes a checked-in **Gradle 8.13 wrapper**.
+- The GitHub Actions workflow at `.github/workflows/android.yml` now:
   - sets up **JDK 17**
-  - installs **Gradle 8.7** via `gradle/actions/setup-gradle@v4`
-  - runs `ktlintCheck`, `detekt`, and `assembleDebug`
+  - restores/configures the Gradle cache via `gradle/actions/setup-gradle@v5`
+  - runs wrapper-only commands for `ktlintCheck`, `detekt`, and `assembleDebug`
   - uploads the debug APK as an artifact
-- There are currently **no `test/` or `androidTest/` source sets** in `app/src`, so CI is mainly lint + static analysis + build right now.
+- A `test/` source set is now active in `app/src/test/`, with an initial baseline of JVM unit tests for `SettingsViewModel` and `ChatScreen` helpers. CI can run `./gradlew testDebugUnitTest`. There is no `androidTest/` source set yet.
 
 ---
 
@@ -34,47 +34,29 @@ What you can do from a phone today:
 - download the resulting debug APK artifact on the phone
 - install it with `adb`-free sideloading (allow install from browser/files app as needed)
 
-### Caveat
-
-The current workflow uploads artifacts with `actions/upload-artifact@v4`, which typically means **zip download behavior**. That is workable on mobile, but annoying.
-
-GitHub announced in 2026 that newer artifact actions can support **non-zipped browser downloads**, including in **mobile browsers**, when using newer versions and `archive: false`.
-
-So if mobile convenience matters, this workflow should eventually be updated to a newer artifact action version that supports direct, unzipped downloads.
-
 ---
 
 ## Can the Gradle wrapper be generated without a local Gradle install?
 
 ### Short answer
 
-**Not in the officially recommended way.**
+**Yes, for this repo, via the dedicated GitHub Actions bootstrap workflow.**
 
-Gradle’s own documentation is explicit: the Wrapper is **created using the `gradle wrapper` task**, and **generating the initial wrapper files requires an installed Gradle runtime**.
+Gradle’s officially recommended path is still to generate/update wrapper files using the `wrapper` task from an installed Gradle runtime. In a phone-first setup, this repository solves that by keeping a manual workflow that can regenerate the wrapper remotely.
 
 ### What that means in practice
 
-- Once wrapper files are present, **you do not need Gradle installed locally**. `./gradlew` downloads and runs the correct Gradle version for the project.
-- But the **first creation** of wrapper files is supposed to happen from an environment that already has Gradle.
+- For everyday use, you do **not** need Gradle installed locally. Run `./gradlew ...`.
+- If the wrapper ever needs to be regenerated, use the **Bootstrap Gradle Wrapper** workflow.
+- That workflow defaults to **Gradle 8.13**, which matches the committed wrapper baseline.
 
 ### Practical implication for this repo
 
-Since the repo already has a GitHub Actions workflow that installs Gradle 8.7, the cleanest fix is:
+The clean operating model is now:
 
-- use CI once to run `gradle wrapper --gradle-version 8.7`
-- commit the generated wrapper files back to the repo
-
-That avoids needing Android Studio or a desktop machine.
-
-### Unsupported / brittle alternatives
-
-There are hacky ways to bootstrap wrapper files manually by copying scripts/JAR/properties from another source, but I do **not** recommend that as the main path because:
-
-- it is easy to mismatch wrapper files and Gradle version
-- it is harder to trust and audit
-- Gradle docs do not present that as the supported setup flow
-
-If you only have a phone, **CI-generated wrapper files** are the sane solution.
+- wrapper committed to the repo
+- CI and local commands use `./gradlew`
+- GitHub Actions is the fallback path for wrapper regeneration when local tooling is unavailable
 
 ---
 
@@ -92,8 +74,8 @@ If you only have a phone, **CI-generated wrapper files** are the sane solution.
 
 ### Why this is the best fit
 
-- no need to install Android SDK/Gradle locally on the phone
-- avoids Termux/ARM toolchain edge cases
+- no need to install the full Android SDK/Gradle toolchain locally on the phone
+- avoids most Termux/ARM toolchain edge cases
 - reproducible, shareable build environment
 - easiest way to keep modern Android tooling working
 
@@ -106,7 +88,7 @@ If you only have a phone, **CI-generated wrapper files** are the sane solution.
 
 ### What to add next
 
-1. **Commit Gradle wrapper files**.
+1. Keep the wrapper committed and authoritative.
 2. Keep CI building `assembleDebug` on every push/PR.
 3. Add **unit tests** and run `testDebugUnitTest` in CI.
 4. If needed later, add a separate workflow for signed release artifacts.
@@ -153,7 +135,7 @@ Use Termux for **code + git**, not as the main Android build host, unless you sp
 
 For this repo, that path is lower-confidence than CI because the project uses:
 
-- AGP 8.5.2
+- AGP 8.13.2
 - Java 17
 - Compose
 - modern Gradle/Kotlin tooling
@@ -190,7 +172,7 @@ Not if you want the shortest path to productive Android app iteration.
 
 ## What is harder
 
-- **Instrumented tests** (`connectedAndroidTest`) from phone-only workflow
+- **Instrumented tests** (`connectedAndroidTest`) from a phone-only workflow
 - emulator-based testing
 - interactive debugging comparable to Android Studio
 
@@ -208,59 +190,46 @@ That gives the highest return with the least infrastructure pain.
 
 ## Recommended implementation order
 
-## 1) Commit a real Gradle wrapper
+## 1) Keep a real Gradle wrapper committed
 
-This is the highest-priority infrastructure fix.
+This is the highest-priority infrastructure baseline.
 
 Why:
 
-- Android docs expect builds to be run through the wrapper
-- wrapper makes the project self-contained
-- removes ambiguity between local/CI Gradle versions
-- simplifies every future workflow
+- Android tooling expects builds to be run through the wrapper
+- the wrapper makes the project self-contained
+- it removes ambiguity between local and CI Gradle versions
+- it simplifies every future workflow
 
-Best way with Android-only access:
+Current baseline:
 
-- create a one-off GitHub Actions job or temporary branch workflow that runs:
-  - `gradle wrapper --gradle-version 8.7`
-- commit these generated files back into the repo:
-  - `gradlew`
-  - `gradlew.bat`
-  - `gradle/wrapper/gradle-wrapper.jar`
-  - `gradle/wrapper/gradle-wrapper.properties`
-
-After that, update CI to use `./gradlew ...` unconditionally.
+- `gradlew`
+- `gradlew.bat`
+- `gradle/wrapper/gradle-wrapper.jar`
+- `gradle/wrapper/gradle-wrapper.properties`
+- wrapper configured for **Gradle 8.13**
 
 ## 2) Keep GitHub Actions as the default build path
 
 Use Actions for:
 
-- `ktlintCheck`
-- `detekt`
-- `assembleDebug`
+- `./gradlew ktlintCheck`
+- `./gradlew detekt`
+- `./gradlew assembleDebug`
 
-This is already mostly in place.
+## 3) Improve mobile artifact delivery later if needed
 
-## 3) Improve mobile artifact delivery
+If artifact download friction becomes a real issue on mobile, evaluate newer artifact options or a release-distribution workflow.
 
-Upgrade artifact upload/download flow so APK retrieval is easier from a phone.
+## 4) Expand unit test coverage
 
-Preferred direction:
+The repo now has an initial JVM unit test baseline (`SettingsViewModel` and `ChatScreen` helpers) under `app/src/test/`. Run them in CI with `./gradlew testDebugUnitTest`.
 
-- move to newer artifact actions that support non-zipped artifact handling
-- configure uploads so browser/mobile download friction is lower
+Add more unit tests for:
 
-## 4) Add actual unit tests
-
-Right now the repo has test dependencies but no test source sets.
-
-Add unit tests for:
-
-- settings/repository logic
-- view-model logic
+- additional view-model logic as features expand
 - model serialization / parsing logic
-
-Then run them in CI with `testDebugUnitTest`.
+- repository edge cases
 
 ## 5) Use manual device testing for UI behavior
 
@@ -278,12 +247,10 @@ This is the fallback, not the foundation.
 
 ## Concrete next steps
 
-1. **Bootstrap and commit the Gradle wrapper via CI**.
-2. **Simplify `.github/workflows/android.yml`** to always use `./gradlew` after wrapper is committed.
-3. **Keep debug APK artifact upload** in place.
-4. **Modernize artifact delivery** for easier mobile downloads.
-5. **Add JVM unit tests** and run them in CI.
-6. Use the Android phone for **manual sideload testing** on every meaningful change.
+1. Keep the wrapper and CI workflow aligned on **Gradle 8.13**.
+2. Run CI on the current branch and confirm `ktlintCheck`, `detekt`, and `assembleDebug` pass through `./gradlew`.
+3. Expand unit tests as app logic grows; run `./gradlew testDebugUnitTest` in CI.
+4. Keep using the Android phone for **manual sideload testing** on meaningful changes.
 
 ---
 
@@ -293,8 +260,8 @@ If the constraint is truly **Android phone only**, I would not try to force a de
 
 **Best path:**
 
-- GitHub Actions as the build machine
 - Gradle wrapper committed to repo
+- GitHub Actions as the build machine
 - phone used for editing, pushing, downloading artifacts, and manual testing
 
 That is the most realistic, least fragile, and fastest-to-productive setup for this project.

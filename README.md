@@ -20,8 +20,20 @@ This repository currently contains:
 - Compose app shell with Chat and Settings tabs
 - architecture docs
 - NanoGPT API guide copied into the repo
+- committed Gradle wrapper files for reproducible local and CI builds
 
-The Android build toolchain is not installed in the current Termux environment yet, so this is scaffolded but not compiled locally.
+The current Termux environment used for editing may not have the full Android build toolchain installed locally, so GitHub Actions remains the primary validation path.
+
+## Build and CI baseline
+
+This repo now builds through the committed Gradle wrapper targeting **Gradle 8.13**.
+
+Typical commands:
+- `./gradlew ktlintCheck`
+- `./gradlew detekt`
+- `./gradlew assembleDebug`
+
+GitHub Actions runs the same wrapper-based flow and uploads the debug APK as an artifact.
 
 ## Planned stack
 
@@ -31,6 +43,7 @@ The Android build toolchain is not installed in the current Termux environment y
 - OkHttp
 - kotlinx.serialization
 - secure local key storage
+- encrypted API-key prefs excluded from Android backup/restore flows
 
 ## Roadmap
 
