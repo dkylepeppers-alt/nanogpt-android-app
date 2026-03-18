@@ -18,7 +18,7 @@ That recommendation is based on the current repo state:
   - restores/configures the Gradle cache via `gradle/actions/setup-gradle@v5`
   - runs wrapper-only commands for `ktlintCheck`, `detekt`, and `assembleDebug`
   - uploads the debug APK as an artifact
-- There are currently **no `test/` or `androidTest/` source sets** in `app/src`, so CI is mainly lint + static analysis + build right now.
+- A `test/` source set is now active in `app/src/test/`, with an initial baseline of JVM unit tests for `SettingsViewModel` and `ChatScreen` helpers. CI can run `./gradlew testDebugUnitTest`. There is no `androidTest/` source set yet.
 
 ---
 
@@ -221,17 +221,15 @@ Use Actions for:
 
 If artifact download friction becomes a real issue on mobile, evaluate newer artifact options or a release-distribution workflow.
 
-## 4) Add actual unit tests
+## 4) Expand unit test coverage
 
-Right now the repo has test dependencies but no test source sets.
+The repo now has an initial JVM unit test baseline (`SettingsViewModel` and `ChatScreen` helpers) under `app/src/test/`. Run them in CI with `./gradlew testDebugUnitTest`.
 
-Add unit tests for:
+Add more unit tests for:
 
-- settings/repository logic
-- view-model logic
+- additional view-model logic as features expand
 - model serialization / parsing logic
-
-Then run them in CI with `./gradlew testDebugUnitTest`.
+- repository edge cases
 
 ## 5) Use manual device testing for UI behavior
 
@@ -251,7 +249,7 @@ This is the fallback, not the foundation.
 
 1. Keep the wrapper and CI workflow aligned on **Gradle 8.13**.
 2. Run CI on the current branch and confirm `ktlintCheck`, `detekt`, and `assembleDebug` pass through `./gradlew`.
-3. Add tests later once app logic expands.
+3. Expand unit tests as app logic grows; run `./gradlew testDebugUnitTest` in CI.
 4. Keep using the Android phone for **manual sideload testing** on meaningful changes.
 
 ---

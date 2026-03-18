@@ -135,7 +135,14 @@ Uses the default ktlint ruleset via the Gradle plugin. Key rules enforced:
 
 ### Current State
 
-Test dependencies are configured (JUnit 4, Espresso, Compose UI Test) but **no test files exist yet**. The test directories (`app/src/test/`, `app/src/androidTest/`) have not been created.
+An initial JVM unit test baseline exists under `app/src/test/java/com/kyle/nanogptapp/`:
+
+- `ui/settings/SettingsViewModelTest.kt` — tests for `SettingsViewModel` state transitions using a fake repository
+- `ui/chat/ChatScreenTest.kt` — tests for `ChatScreen` helper behavior
+
+The `app/src/androidTest/` directory has not been created yet.
+
+Run unit tests in CI with `./gradlew testDebugUnitTest` (or the shorthand `./gradlew test`).
 
 ### Test Frameworks Available
 

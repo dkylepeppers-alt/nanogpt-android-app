@@ -8,10 +8,22 @@ complexity:
   LongMethod:
     active: true
     threshold: 80
+    ignoreAnnotated:
+      - Composable
   LongParameterList:
     active: true
     functionThreshold: 8
     constructorThreshold: 10
+    ignoreAnnotated:
+      - Composable
+
+naming:
+  FunctionNaming:
+    active: true
+    ignoreAnnotated:
+      - Composable
+  MatchingDeclarationName:
+    active: false
 
 style:
   MagicNumber:
@@ -24,5 +36,7 @@ style:
 
 formatting:
   active: true
+  Indentation:
+    active: false
   MaximumLineLength:
     maxLineLength: 140
