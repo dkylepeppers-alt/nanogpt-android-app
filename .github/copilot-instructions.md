@@ -9,7 +9,7 @@ Native Android client for [NanoGPT](https://nano-gpt.com/api) built with **Kotli
 | Area | Technology | Version |
 |------|-----------|---------|
 | Language | Kotlin | 1.9.25 |
-| UI | Jetpack Compose + Material 3 | BOM 2026.03.00 |
+| UI | Jetpack Compose + Material 3 | BOM 2024.09.03 |
 | Build | Gradle (Kotlin DSL `.kts`) | 8.13 via wrapper |
 | Android Gradle Plugin | AGP | 8.13.2 |
 | Java target | JDK | 17 |
