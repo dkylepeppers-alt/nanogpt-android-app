@@ -14,7 +14,7 @@ Native Android client for [NanoGPT](https://nano-gpt.com/api) built with **Kotli
 | Android Gradle Plugin | AGP | 8.13.2 |
 | Java target | JDK | 17 |
 | Networking | OkHttp | 4.12.0 |
-| Serialization | kotlinx.serialization | 1.10.0 |
+| Serialization | kotlinx.serialization | 1.6.3 |
 | Secure storage | EncryptedSharedPreferences | security-crypto 1.1.0 |
 | Compose compiler | Kotlin compiler extension | 1.5.15 |
 | Linting | ktlint (Gradle plugin) | 12.3.0 |
