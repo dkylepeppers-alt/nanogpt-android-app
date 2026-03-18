@@ -43,6 +43,7 @@ GitHub Actions runs the same wrapper-based flow and uploads the debug APK as an 
 - OkHttp
 - kotlinx.serialization
 - secure local key storage
+- encrypted API-key prefs excluded from Android backup/restore flows
 
 ## Roadmap
 

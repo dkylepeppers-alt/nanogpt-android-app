@@ -9,7 +9,27 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 
-class SettingsRepository(context: Context) {
+interface SettingsRepository {
+    val settings: StateFlow<AppSettings>
+
+    fun getApiKey(): String
+
+    fun updateApiKey(apiKey: String)
+
+    fun clearApiKey()
+
+    fun updateSelectedModel(modelId: String)
+
+    fun updateReasoningEnabled(enabled: Boolean)
+
+    fun updateSearchEnabled(enabled: Boolean)
+
+    fun updateMemoryEnabled(enabled: Boolean)
+
+    fun updateMediaEnabled(enabled: Boolean)
+}
+
+class AndroidSettingsRepository(context: Context) : SettingsRepository {
     private val appContext = context.applicationContext
 
     private val prefs: SharedPreferences = appContext.getSharedPreferences(
@@ -17,6 +37,8 @@ class SettingsRepository(context: Context) {
         Context.MODE_PRIVATE,
     )
 
+    // Excluded from Android backup/device transfer so encrypted API-key data is not
+    // restored onto a different keystore context where it cannot be safely decrypted.
     private val securePrefs: SharedPreferences = EncryptedSharedPreferences.create(
         appContext,
         SECURE_PREFS_NAME,
@@ -28,41 +50,41 @@ class SettingsRepository(context: Context) {
     )
 
     private val _settings = MutableStateFlow(readSettings())
-    val settings: StateFlow<AppSettings> = _settings.asStateFlow()
+    override val settings: StateFlow<AppSettings> = _settings.asStateFlow()
 
-    fun getApiKey(): String = securePrefs.getString(KEY_API_KEY, "") ?: ""
+    override fun getApiKey(): String = securePrefs.getString(KEY_API_KEY, "") ?: ""
 
-    fun updateApiKey(apiKey: String) {
+    override fun updateApiKey(apiKey: String) {
         securePrefs.edit().putString(KEY_API_KEY, apiKey.trim()).apply()
         publish()
     }
 
-    fun clearApiKey() {
+    override fun clearApiKey() {
         securePrefs.edit().remove(KEY_API_KEY).apply()
         publish()
     }
 
-    fun updateSelectedModel(modelId: String) {
+    override fun updateSelectedModel(modelId: String) {
         prefs.edit().putString(KEY_SELECTED_MODEL_ID, modelId).apply()
         publish()
     }
 
-    fun updateReasoningEnabled(enabled: Boolean) {
+    override fun updateReasoningEnabled(enabled: Boolean) {
         prefs.edit().putBoolean(KEY_REASONING_ENABLED, enabled).apply()
         publish()
     }
 
-    fun updateSearchEnabled(enabled: Boolean) {
+    override fun updateSearchEnabled(enabled: Boolean) {
         prefs.edit().putBoolean(KEY_SEARCH_ENABLED, enabled).apply()
         publish()
     }
 
-    fun updateMemoryEnabled(enabled: Boolean) {
+    override fun updateMemoryEnabled(enabled: Boolean) {
         prefs.edit().putBoolean(KEY_MEMORY_ENABLED, enabled).apply()
         publish()
     }
 
-    fun updateMediaEnabled(enabled: Boolean) {
+    override fun updateMediaEnabled(enabled: Boolean) {
         prefs.edit().putBoolean(KEY_MEDIA_ENABLED, enabled).apply()
         publish()
     }

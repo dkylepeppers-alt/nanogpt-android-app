@@ -19,7 +19,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import com.kyle.nanogptapp.data.settings.SettingsGraph
 import com.kyle.nanogptapp.ui.chat.ChatScreen
-import com.kyle.nanogptapp.ui.settings.SettingsScreen
+import com.kyle.nanogptapp.ui.settings.SettingsRoute
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -54,7 +54,7 @@ fun AppRoot() {
 
             when (selectedTab) {
                 0 -> ChatScreen(hasApiKey = settings.hasApiKey)
-                1 -> SettingsScreen()
+                1 -> SettingsRoute()
             }
         }
     }

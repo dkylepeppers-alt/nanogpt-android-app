@@ -18,33 +18,24 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.kyle.nanogptapp.data.settings.SettingsGraph
 
 @Composable
-fun SettingsScreen() {
-    val context = LocalContext.current.applicationContext
-    val factory = remember(context) {
-        object : ViewModelProvider.Factory {
-            @Suppress("UNCHECKED_CAST")
-            override fun <T : ViewModel> create(modelClass: Class<T>): T {
-                return SettingsViewModel(SettingsGraph.repository(context)) as T
-            }
-        }
-    }
+fun SettingsRoute(
+    factory: ViewModelProvider.Factory = SettingsGraph.viewModelFactory(LocalContext.current.applicationContext),
+) {
     val viewModel: SettingsViewModel = viewModel(factory = factory)
     val uiState by viewModel.uiState.collectAsState()
 
-    SettingsContent(
+    SettingsScreen(
         uiState = uiState,
         onApiKeyInputChanged = viewModel::onApiKeyInputChanged,
         onApiKeyVisibilityChanged = viewModel::onApiKeyVisibilityChanged,
@@ -58,7 +49,7 @@ fun SettingsScreen() {
 }
 
 @Composable
-private fun SettingsContent(
+fun SettingsScreen(
     uiState: SettingsUiState,
     onApiKeyInputChanged: (String) -> Unit,
     onApiKeyVisibilityChanged: (Boolean) -> Unit,
