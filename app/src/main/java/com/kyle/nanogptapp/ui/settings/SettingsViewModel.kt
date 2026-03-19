@@ -1,18 +1,22 @@
 package com.kyle.nanogptapp.ui.settings
 
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import com.kyle.nanogptapp.data.api.NanoGptApiClient
 import com.kyle.nanogptapp.data.settings.SettingsRepository
 import com.kyle.nanogptapp.model.AppSettings
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.launch
 
 data class SettingsUiState(
     val settings: AppSettings = AppSettings(),
     val apiKeyInput: String = "",
     val isApiKeyVisible: Boolean = false,
     val saveMessage: String? = null,
+    val isVerifyingKey: Boolean = false,
 )
 
 class SettingsViewModel(
@@ -62,6 +66,28 @@ class SettingsViewModel(
                 apiKeyInput = "",
                 saveMessage = "API key removed from secure storage",
             )
+        }
+    }
+
+    fun verifyApiKey() {
+        val key = _uiState.value.apiKeyInput.trim()
+        if (key.isBlank()) {
+            _uiState.update { it.copy(saveMessage = "Enter an API key first") }
+            return
+        }
+        viewModelScope.launch {
+            _uiState.update { it.copy(isVerifyingKey = true, saveMessage = null) }
+            val result = NanoGptApiClient(key).fetchModels()
+            _uiState.update { state ->
+                state.copy(
+                    isVerifyingKey = false,
+                    saveMessage = if (result.isSuccess) {
+                        "Token valid — ${result.getOrDefault(emptyList()).size} models available"
+                    } else {
+                        "Verification failed: ${result.exceptionOrNull()?.message}"
+                    },
+                )
+            }
         }
     }
 

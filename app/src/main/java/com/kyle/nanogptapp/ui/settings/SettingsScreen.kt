@@ -11,6 +11,7 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Switch
@@ -19,6 +20,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.input.KeyboardCapitalization
@@ -50,6 +52,7 @@ fun SettingsScreen() {
         onApiKeyVisibilityChanged = viewModel::onApiKeyVisibilityChanged,
         onSaveApiKey = viewModel::saveApiKey,
         onClearApiKey = viewModel::clearApiKey,
+        onVerifyApiKey = viewModel::verifyApiKey,
         onReasoningChanged = viewModel::updateReasoningEnabled,
         onSearchChanged = viewModel::updateSearchEnabled,
         onMemoryChanged = viewModel::updateMemoryEnabled,
@@ -64,6 +67,7 @@ private fun SettingsContent(
     onApiKeyVisibilityChanged: (Boolean) -> Unit,
     onSaveApiKey: () -> Unit,
     onClearApiKey: () -> Unit,
+    onVerifyApiKey: () -> Unit,
     onReasoningChanged: (Boolean) -> Unit,
     onSearchChanged: (Boolean) -> Unit,
     onMemoryChanged: (Boolean) -> Unit,
@@ -106,7 +110,7 @@ private fun SettingsContent(
                     ),
                     supportingText = {
                         Text(
-                            "Stored locally only. Future network clients can read it through the settings repository.",
+                            "Stored locally only. Network clients read it through the settings repository.",
                         )
                     },
                 )
@@ -123,6 +127,22 @@ private fun SettingsContent(
                     }
                     OutlinedButton(onClick = onClearApiKey) {
                         Text("Clear")
+                    }
+                }
+
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    OutlinedButton(
+                        onClick = onVerifyApiKey,
+                        enabled = !uiState.isVerifyingKey,
+                    ) {
+                        Text("Verify token")
+                    }
+                    if (uiState.isVerifyingKey) {
+                        CircularProgressIndicator(modifier = Modifier.padding(4.dp))
                     }
                 }
 
